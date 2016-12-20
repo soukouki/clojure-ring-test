@@ -1,7 +1,23 @@
-(ns web-myscalc.core
-	(:gen-class))
+(ns web_myscalc.core
+	(:require [ring.adapter.jetty :as server]))
 
-(defn -main
-	"I don't do a whole lot ... yet."
-	[& args]
-	(println "Hello, World!"))
+(defonce server (atom nil))
+
+(defn handler [req] {
+	:status 200,
+	:headers {"Context-Type" "text/plain"},
+	:body "Hello World!"})
+
+(defn start-server []
+	(when-not @server
+		(reset! server (server/run-jetty handler {:port 3000, :join? false}))))
+
+(defn stop-server []
+	(when @server
+		(.stop @server)
+		(reset! server nil)))
+
+(defn restart-server []
+	(when @server
+		(stop-server)
+		(start-saver)))
