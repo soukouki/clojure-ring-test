@@ -22,3 +22,8 @@
 	(when @server
 		(.stop @server)
 		(reset! server nil)))
+
+(defn restart-server []
+	(when @server
+		(stop-server))
+	(start-server))
