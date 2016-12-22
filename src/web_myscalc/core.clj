@@ -2,17 +2,30 @@
 	(:require
 		[clojure.string :as str]
 		[clojure.java.shell :as sh]
+		[clojure.java.io :as io]
 		[ring.adapter.jetty :as server]))
 
 (defonce server (atom nil))
 
-(defn myscalc [formula]
-	(:out (sh/sh "myscalc.cmd" :in (subs formula 1))))
+(defn search-view []
+	(slurp (io/file (io/resource "search.html"))))
+		
+(defn myscalc [f]
+	(:out (sh/sh "myscalc.cmd" :in f)))
 
-(defn handler [req] {
+(defn calc-view [uri]
+	(str (str/replace (myscalc (subs uri 1)) #"\r\n" "<br>") "<br><a href='/'>return</a>"))
+
+(defn select-view [uri]
+	(case uri
+		"/" (search-view)
+		(calc-view uri)))
+
+(defn handler [req] (println (:uri req))
+	{
 	:status 200,
-	:headers {"Context-Type" "text/plain"},
-	:body (myscalc (req :uri))})
+	:headers {"Content-Type" "text/html"},
+	:body (select-view (:uri req))})
 
 (defn start-server []
 	(when-not @server
